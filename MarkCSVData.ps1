@@ -25,13 +25,9 @@
 
     for($i=0; $i -lt $field.Length; $i++)
     {
-
-
         if ($lookup.indexof($fieldarray[$i]) -ne -1)
         {
-
-            $rn = Get-Random -Minimum 0 -Maximum $randMax
-                
+            $rn = Get-Random -Minimum 0 -Maximum $randMax               
             $fieldarray[$i] = $lookuparray[$rn]
         }
     }
@@ -75,7 +71,7 @@ foreach ($line in $csvData)
         if ($dictionary[$maskfield][$mfield])
         {
             $line.$maskfield = $dictionary[$maskfield][$mfield]
-            "Dictionary hit $mfield ->" +  $line.$maskfield 
+            # "Dictionary hit $mfield ->" +  $line.$maskfield 
 
         } else {
 
