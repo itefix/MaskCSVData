@@ -8,10 +8,7 @@ SYNOPSIS
     
     
 SYNTAX
-    .\MarkCSVData.ps1 [[-csvFileIn] <String>] [[-csvFileOut] <String>]
-	[[-inDelimiter] <String>] [[-outDelimiter] <String>] [[-profile] <String>]
-	[[-configFile] <String>] [<CommonParameters>]
-    
+    .\MarkCSVData.ps1 [[-csvFileIn] <String>] [[-csvFileOut] <String>] [[-inDelimiter] <String>] [[-outDelimiter] <String>] [[-profile] <String>] [[-configFile] <String>] [<CommonParameters>] 
     
 DESCRIPTION
     Replaces characters in specified fields by using random lookup into predefined groups:
@@ -21,16 +18,11 @@ DESCRIPTION
     
 
 PARAMETERS
-    -csvFileIn <String>
-        
-    -csvFileOut <String>
-        
-    -inDelimiter <String>
-        
-    -outDelimiter <String>
-        
-    -profile <String>
-        
+    -csvFileIn <String>        
+    -csvFileOut <String>       
+    -inDelimiter <String>      
+    -outDelimiter <String>        
+    -profile <String>       
     -configFile <String>
      
     -------------------------- EXAMPLE 1 --------------------------
