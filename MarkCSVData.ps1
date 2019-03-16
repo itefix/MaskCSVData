@@ -1,10 +1,22 @@
-# A simple data masking of CSV files
+<#
+.Synopsis
+   A simple script for data masking of CSV files
+.DESCRIPTION
+   Replaces characters in specified fields by using random lookup into predefined groups:
+   lower and uppercase vocals, lower and uppercase consonants and digits by default.
+   When a new pattern is generated, it will be reused again for occurences of the
+   same value in the same field.
+.EXAMPLE
+   .\MarkCSVData.ps1 -profile Sample -csvFileIn .\MaskCSVData.sample.csv -csvFileOut .\MaskCSVData.out.csv
+.EXAMPLE
+    .\MarkCSVData.ps1 -profile Sample -csvFileIn .\in.csv -csvFileOut .\out.csv -inDelimiter '`t' -outDelimiter ';'
+#>
 
  param (
     [string]$csvFileIn = "",
     [string]$csvFileOut = "",
-    [string]$inDelimiter = ',',
-    [string]$outDelimiter = ',',
+    [string]$inDelimiter = ",",
+    [string]$outDelimiter = ",",
     [string]$profile = "",
     [string]$configFile = "$PSScriptRoot\MaskCSVData.config"
  )
@@ -14,10 +26,13 @@
     throw "Missing Configuration or Input files ($configFile, $csvFileIn)"
  }
 
- #####
+ ##### Functions #####
  function MaskField
 {
-    param([string]$field, [string]$lookup)
+    param(
+        [string]$field, # field to mask
+        [string]$lookup # each field char in that group will be replaced by an other char in the same group
+    )
 
     $fieldarray = [char[]]($field)
     $lookuparray = [char[]]($lookup)
@@ -35,7 +50,7 @@
     return [string]$fieldarray
 }
 
-#####
+##### Main #####
 
 $csvData = Import-Csv -Path $csvFileIn -Delimiter $inDelimiter
 if (!$csvData)
@@ -46,14 +61,15 @@ if (!$csvData)
 # Read configuration file
 $xml = New-Object -TypeName XML
 $xml.Load($configFile)
- 
+
+# check if the profile is defined in the configuration file
 $config = $Xml.Profile | Where-Object { $_.Name -eq $profile }
 if (!$config)
 {
     throw "Missing profile $profile in $configFile"
 }
 
-# Create dictionary hashes
+# Create dictionary hashes for reuse of pattern
 $dictionary = @{};
 foreach ($maskfield in $config.MaskFields.Field)
 {
@@ -62,12 +78,12 @@ foreach ($maskfield in $config.MaskFields.Field)
 
 foreach ($line in $csvData)
 {
-
+    # Process only fields specified in the configuration
     foreach ($maskfield in $config.MaskFields.Field)
     {
-
         $mfield = $line.$maskfield
 
+        # No need to generate a new mask if done already
         if ($dictionary[$maskfield][$mfield])
         {
             $line.$maskfield = $dictionary[$maskfield][$mfield]
@@ -75,11 +91,15 @@ foreach ($line in $csvData)
 
         } else {
 
+            # We use five lookup groups - lower/upper-case vocals, lower/-uppercase consonants and digits
+            # Extend/update according to your needs
             foreach ($mlookup in  "aeiou", "AIEOU","bcdfgjklmnpqrstvwxyz","BCDFGHJKLMNPQRSTVWXYZ","0123456789")
             {
                 $mfield = MaskField -field $mfield -lookup $mlookup
             }
 
+            # removing debris spaces, created during conversion from string to char array
+            # almost sure that this can be done better :-)
             $lstring = $mfield.Replace('                               ','')
             $dictionary[$maskfield][$line.$maskfield] = $lstring
             $line.$maskfield = $lstring
@@ -87,4 +107,4 @@ foreach ($line in $csvData)
     }
 }
 
-$csvData | Export-Csv -Path $csvFileOut -Delimiter $outDelimiter
+$csvData | Export-Csv -Path $csvFileOut -Delimiter $outDelimiter -NoTypeInformation
